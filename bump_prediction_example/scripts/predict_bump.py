@@ -31,7 +31,7 @@ class PredictBumpNode(object):
         print(self.model.predict_proba(im_vectorized[np.newaxis, :]))
 
     def process_bump(self, msg):
-        print(msg)
+        pass
 
     def run(self):
         while not rospy.is_shutdown():
