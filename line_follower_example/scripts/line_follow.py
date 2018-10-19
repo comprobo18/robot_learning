@@ -5,12 +5,12 @@ import rospy
 import rospkg
 from sensor_msgs.msg import Image
 from neato_node.msg import Bump
-from cv_bridge import CvBridge
-import cPickle as pickle
+from cv_bridge import CvBridge import cPickle as pickle
 import numpy as np
 import cv2
 from tensorflow.keras.models import load_model
 from skimage.transform import resize
+from geometry_msgs.msg import Twist, Vector3
 
 
 class FollowLine(object):
@@ -23,6 +23,7 @@ class FollowLine(object):
         self.model = load_model(model_path)
         self.bridge = CvBridge()
         rospy.Subscriber('/camera/image_raw', Image, self.process_image)
+        self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         print(self.model.summary())
 
     def lower_half_img(self, img):
@@ -49,7 +50,9 @@ class FollowLine(object):
     def run(self):
         while not rospy.is_shutdown():
             if self.im_to_classify is not None:
-                print(self.model.predict(self.im_to_classify))
+                omega = self.model.predict(self.im_to_classify)
+                msg = Twist(linear=Vector3(x=.1), angular=Vector3(z=omega))
+                self.pub.publish(msg)
             cv2.waitKey(100)
 
 
